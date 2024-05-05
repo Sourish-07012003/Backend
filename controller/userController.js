@@ -162,49 +162,52 @@ export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
   console.log(req.file);
   console.log(docAvatar);
 
-  // const allowedFormats = ["image/png", "image/jpeg", "image/webp"];
-  // if (!allowedFormats.includes(docAvatar.mimetype)) {
-  //   return next(new ErrorHandler("File Format Not Supported!", 400));
-  // }
-  // const {
-  //   firstName,
-  //   lastName,
-  //   email,
-  //   phone,
-  //   nic,
-  //   dob,
-  //   gender,
-  //   password,
-  //   doctorDepartment,
-  // } = req.body;
+  const allowedFormats = ["image/png", "image/jpeg", "image/webp"];
+  if (!allowedFormats.includes(docAvatar.mimetype)) {
+    return next(new ErrorHandler("File Format Not Supported!", 400));
+  }
+  const {
+    firstName,
+    lastName,
+    email,
+    phone,
+    nic,
+    dob,
+    gender,
+    password,
+    doctorDepartment,
+  } = req.body;
 
-  // if (
-  //   !firstName ||
-  //   !lastName ||
-  //   !email ||
-  //   !phone ||
-  //   !nic ||
-  //   !dob ||
-  //   !gender ||
-  //   !password ||
-  //   !doctorDepartment ||
-  //   !docAvatar
-  // ) {
-  //   return next(new ErrorHandler("Please Fill Full Form!", 400));
-  // }
-  // const isRegistered = await User.findOne({ email });
-  // if (isRegistered) {
-  //   return next(
-  //     new ErrorHandler("Doctor With This Email Already Exists!", 400)
-  //   );
-  // }
+  if (
+    !firstName ||
+    !lastName ||
+    !email ||
+    !phone ||
+    !nic ||
+    !dob ||
+    !gender ||
+    !password ||
+    !doctorDepartment ||
+    !docAvatar
+  ) {
+    return next(new ErrorHandler("Please Fill Full Form!", 400));
+  }
+  const isRegistered = await User.findOne({ email });
+  if (isRegistered) {
+    return next(
+      new ErrorHandler("Doctor With This Email Already Exists!", 400)
+    );
+  }
   cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
   });
+  
   console.log(docAvatar.path);
-  const cloudinaryResponse = await cloudinary.uploader.upload(docAvatar.path);
+  console.log(docAvatar.path);
+  console.log(docAvatar.path);
+  const cloudinaryResponse = await cloudinary.uploader.upload(docAvatar.path,{timeout:60000});
   // if (!cloudinaryResponse || cloudinaryResponse.error) {
   //   console.error(
   //     "Cloudinary Error:",
@@ -216,22 +219,22 @@ export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
   // }
 
   console.log(cloudinaryResponse);
-  // const doctor = await User.create({
-  //   firstName,
-  //   lastName,
-  //   email,
-  //   phone,
-  //   nic,
-  //   dob,
-  //   gender,
-  //   password,
-  //   role: "Doctor",
-  //   doctorDepartment,
-  //   docAvatar: {
-  //     public_id: cloudinaryResponse.public_id,
-  //     url: cloudinaryResponse.secure_url,
-  //   },
-  // });
+  const doctor = await User.create({
+    firstName,
+    lastName,
+    email,
+    phone,
+    nic,
+    dob,
+    gender,
+    password,
+    role: "Doctor",
+    doctorDepartment,
+    docAvatar: {
+      public_id: cloudinaryResponse.public_id,
+      url: cloudinaryResponse.secure_url,
+    },
+  });
   res.status(201).json({
     success: true,
     message: "New Doctor Registered",
